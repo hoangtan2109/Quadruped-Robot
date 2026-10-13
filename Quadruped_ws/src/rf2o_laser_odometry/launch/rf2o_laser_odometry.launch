@@ -1,0 +1,20 @@
+<launch>
+  <node pkg="rf2o_laser_odometry" type="rf2o_laser_odometry_node" name="rf2o_laser_odometry" output="screen">
+    <!-- 1. Đổi thành topic LiDAR thực tế của ông -->
+    <param name="laser_scan_topic" value="/hokuyo_scan"/>        
+    
+    <param name="odom_topic" value="/odom_rf2o" />              
+    
+    <!-- 2. Bật thành TRUE để RViz nhận được sơ đồ TF -->
+    <param name="publish_tf" value="true" />                   
+    
+    <param name="base_frame_id" value="/base_link"/>            
+    <param name="odom_frame_id" value="/odom" />                
+    
+    <!-- 3. ĐỂ TRỐNG (value="") để RF2O tự động bắt đầu từ tọa độ (0,0) -->
+    <param name="init_pose_from_topic" value="" /> 
+    
+    <param name="freq" value="10.0"/> <!-- Nên để 10.0 cho khớp với tần số 10Hz của LiDAR -->
+    <param name="verbose" value="true" />                       
+  </node>
+</launch>

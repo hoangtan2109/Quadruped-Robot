@@ -26,7 +26,6 @@ from quadruped_input_interfacing.InputInterface import InputInterface
 from quadruped_control.State import State
 from quadruped_control.Kinematics import four_legs_inverse_kinematics
 from quadruped_control.Config import Configuration
-from quadruped_input_interfacing.InputController import InputController
 
 if is_physical:
     from quadruped_servo_interfacing.HardwareInterface import HardwareInterface
@@ -82,7 +81,6 @@ def main(use_imu=False):
     print("Creating input listener...")
     input_interface = InputInterface(config)
     print(platform.processor())
-    input_Controller = InputController(1, platform.processor()) #Check raspi hostname and replace here
     print("Done.")
 
     last_loop = time.time()
@@ -91,7 +89,7 @@ def main(use_imu=False):
     print("overlap time: ", config.overlap_time)
     print("swing time: ", config.swing_time)
     print("z clearance: ", config.z_clearance)
-    print("x shift: ", config.x_shift)
+    print("x shift: ", config.front_leg_x_shift)
 
     # Wait until the activate button has been pressed
 

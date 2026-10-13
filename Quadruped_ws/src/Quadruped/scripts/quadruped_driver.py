@@ -7,8 +7,9 @@ import signal
 import socket
 import platform
 from quadruped_peripheral_interfacing.msg import ElectricalMeasurements
-
-
+from quadruped_control.msg import JointSpace, TaskSpace
+from sensor_msgs.msg import Imu
+from tf.transformations import euler_from_quaternion
 #Fetching is_sim and is_physical from arguments
 args = rospy.myargv(argv=sys.argv)
 if len(args) != 4: #arguments have not been provided, go to defaults (not sim, is physical)
@@ -22,9 +23,11 @@ else:
 
 from quadruped_control.Controller import Controller
 from quadruped_input_interfacing.InputInterface import InputInterface
-from quadruped_control.State import State, BehaviorStateped_servo_interfacing.HardwareInterface import HardwareInterface
-    from quadruped_peripheral_interfacing.IMU import IMU
-    from quadruped_control.Config import Leg_linkage
+from quadruped_control.State import State, BehaviorState
+from quadruped_servo_interfacing.HardwareInterface import HardwareInterface
+from quadruped_peripheral_interfacing.IMU import IMU
+from quadruped_control.Config import Leg_linkage, Configuration
+from quadruped_control.Kinematics import four_legs_inverse_kinematics
 
 class quadrupedDriver:
     def __init__(self,is_sim, is_physical, use_imu):
@@ -63,9 +66,14 @@ class quadrupedDriver:
             self.linkage = Leg_linkage(self.config)
             self.hardware_interface = HardwareInterface(self.linkage)
             # Create imu handle
+        # Create imu handle
         if self.use_imu:
-            self.imu = IMU()
-
+            if self.is_physical:
+                self.imu = IMU()
+            elif self.is_sim:
+                # Đăng ký đọc topic IMU từ Gazebo
+                self.imu_sub = rospy.Subscriber("/quadruped_imu/base_link_orientation", Imu, self.imu_callback)
+                self.sim_euler_orientation = np.array([0.0, 0.0, 0.0]) # Biến lưu tạm
         # Create controller and user input handles
         self.controller = Controller(
             self.config,
@@ -85,7 +93,12 @@ class quadrupedDriver:
         rospy.loginfo("front leg x shift: %.2f", self.config.front_leg_x_shift)
 
         
-    
+    def imu_callback(self, msg):
+        q = msg.orientation
+        # Gazebo trả về Quaternion, ta đổi sang Roll, Pitch, Yaw
+        roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+        # Lưu vào biến tạm theo đúng chuẩn [Yaw, Pitch, Roll] mà code đang dùng
+        self.sim_euler_orientation = np.array([yaw, pitch, roll])   
     def run(self):
         # Wait until the activate button has been pressed
         while not rospy.is_shutdown():
@@ -112,9 +125,13 @@ class quadrupedDriver:
                 
                 # Read imu data. Orientation will be None if no data was available
                 # rospy.loginfo(imu.read_orientation())
-                self.state.euler_orientation = (
-                    self.imu.read_orientation() if self.use_imu else np.array([0, 0, 0])
-                )
+                if self.use_imu:
+                    if self.is_physical:
+                        self.state.euler_orientation = self.imu.read_orientation()
+                    elif self.is_sim:
+                        self.state.euler_orientation = self.sim_euler_orientation
+                else:
+                    self.state.euler_orientation = np.array([0, 0, 0])
                 [yaw,pitch,roll] = self.state.euler_orientation
                 # print('Yaw: ',np.round(yaw,2),'Pitch: ',np.round(pitch,2),'Roll: ',np.round(roll,2))
                 # Step the controller forward by dt
@@ -166,7 +183,7 @@ class quadrupedDriver:
         if self.external_commands_enabled == 1:
             foot_locations = np.zeros((3,4))
             j = 0
-            for i in 3:
+            for i in range(3):
                 foot_locations[i] = [msg.FR_foot[j], msg.FL_foot[j], msg.RR_foot[j], msg.RL_foot[j]]
                 j = j+1
             print(foot_locations)
@@ -184,7 +201,7 @@ class quadrupedDriver:
         if self.external_commands_enabled == 1:
             joint_angles = np.zeros((3,4))
             j = 0
-            for i in 3:
+            for i in range(3):
                 joint_angles[i] = [msg.FR_foot[j], msg.FL_foot[j], msg.RR_foot[j], msg.RL_foot[j]]
                 j = j+1
             print(joint_angles)

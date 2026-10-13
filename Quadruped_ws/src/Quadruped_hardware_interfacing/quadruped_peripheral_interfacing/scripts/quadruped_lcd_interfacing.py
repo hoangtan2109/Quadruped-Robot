@@ -61,7 +61,7 @@ class quadrupedDisplayNode:
             draw = ImageDraw.Draw(image1)
 
             #rospy.loginfo("Importing fonts...")
-            Font1 = ImageFont.truetype("/usr/share/fonts/truetype/Font02.ttf", 25)
+            Font1 = ImageFont.truetype("/usr/share/fonts/truetype/DejaVuSans.ttf", 25)
             Font1_small = ImageFont.truetype("/usr/share/fonts/truetype/Font02.ttf", 20)
             Font1_large = ImageFont.truetype("/usr/share/fonts/truetype/Font02.ttf", 60)
             Font2 = ImageFont.truetype("/usr/share/fonts/truetype/Font01.ttf", 35)

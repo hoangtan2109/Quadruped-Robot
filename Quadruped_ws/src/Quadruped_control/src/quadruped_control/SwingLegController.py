@@ -6,6 +6,7 @@ class SwingController:
         self.config = config
 
     def raibert_touchdown_location(
+    # Khi chân swing kết thúc, bàn chân đặt xuống ở đâu? (Raibert heuristic)
         self, leg_index, command
     ):
         delta_p_2d = (
@@ -13,30 +14,34 @@ class SwingController:
             * self.config.stance_ticks
             * self.config.dt
             * command.horizontal_velocity
-        )
+        ) #delta_p_2D = alpha * T_stance * v_command
         delta_p = np.array([delta_p_2d[0], delta_p_2d[1], 0])
         theta = (
             self.config.beta
             * self.config.stance_ticks
             * self.config.dt
             * command.yaw_rate
-        )
+        ) #theta = beta * T_stance * yaw_rate_command
         R = euler2mat(0, 0, theta)
         return R @ self.config.default_stance[:, leg_index] + delta_p
 
 
-    def swing_height(self, swing_phase, triangular=True):
+    def swing_height(self, swing_phase, triangular=False):
+        # swing_phase: 0.0 -> 1.0
         if triangular:
             if swing_phase < 0.5:
                 swing_height_ = swing_phase / 0.5 * self.config.z_clearance
             else:
                 swing_height_ = self.config.z_clearance * (1 - (swing_phase - 0.5) / 0.5)
+        else:
+            swing_height_ = self.config.z_clearance * m.sin(swing_phase * m.pi)
+        
         return swing_height_
 
 
     def next_foot_location(
         self,
-        swing_prop,
+        swing_prop, # 0.0 -> 1.0, đi được bao nhiêu phần của swing phase
         leg_index,
         state,
         command,

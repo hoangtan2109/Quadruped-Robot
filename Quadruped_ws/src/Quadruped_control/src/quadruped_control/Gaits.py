@@ -1,23 +1,14 @@
+#!/usr/bin/env python3
 class GaitController:
     def __init__(self, config):
         self.config = config
 
 
-    def phase_index(self, ticks):
-        """Calculates which part of the gait cycle the robot should be in given the time in ticks.
-        
-        Parameters
-        ----------
-        ticks : int
-            Number of timesteps since the program started
-        gaitparams : GaitParams
-            GaitParams object
-        
-        Returns
-        -------
-        Int
-            The index of the gait phase that the robot should be in.
-        """
+    def phase_index(self, ticks): 
+        # Robot đang ở pha nào trong gait cycle
+        # Chân nào đang ở pha stance, chân nào đang ở pha swing
+        # self.config.phase_ticks = [4, 7, 4, 7]
+        # self.config.phase_length = 22
         phase_time = ticks % self.config.phase_length
         phase_sum = 0
         for i in range(self.config.num_phases):
@@ -28,20 +19,7 @@ class GaitController:
 
 
     def subphase_ticks(self, ticks):
-        """Calculates the number of ticks (timesteps) since the start of the current phase.
-
-        Parameters
-        ----------
-        ticks : Int
-            Number of timesteps since the program started
-        gaitparams : GaitParams
-            GaitParams object
-        
-        Returns
-        -------
-        Int
-            Number of ticks since the start of the current phase.
-        """
+        # Robot đã đi được bao nhiêu ticks trong pha hiện tại
         phase_time = ticks % self.config.phase_length
         phase_sum = 0
         subphase_ticks = 0
@@ -54,18 +32,6 @@ class GaitController:
 
 
     def contacts(self, ticks):
-        """Calculates which feet should be in contact at the given number of ticks
-        
-        Parameters
-        ----------
-        ticks : Int
-            Number of timesteps since the program started.
-        gaitparams : GaitParams
-            GaitParams object
-        
-        Returns
-        -------
-        numpy array (4,)
-            Numpy vector with 0 indicating flight and 1 indicating stance.
-        """
+        # Trả về mảng 4 phần tử, mỗi phần tử là 0 hoặc 1
+        # 0: chân đang ở pha swing, 1: chân đang ở pha stance
         return self.config.contact_phases[:, self.phase_index(ticks)]
