@@ -174,10 +174,6 @@ rostopic hz /scan
 
 ## 📊 Experimental Results
 
-| Bezier Foot Trajectory | Homing & Stabilization Response | TEB Local Planner Optimization |
-| :---: | :---: | :---: |
-| ![Bezier Trajectory](Bezier_Trajectory.png) | ![Homing Response](Homing_Response.png) | ![TEB Elastic Band](TEB_Elastic_Band.png) |
-
 * **Posture Control:** Roll and pitch errors are strictly bounded below $\pm 0.01\text{ rad}$ during active Trot locomotion.
 * **Signal Filtering:** Moving Average (MA) and Exponential Moving Average (EMA, $\alpha = 0.2$) successfully eliminate high-frequency IMU vibration noise while keeping phase delay minimal.
 
